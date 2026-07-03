@@ -13,7 +13,24 @@ const TABS = [
   { id: 'income', label: 'Income Protection', Comp: IncomeProtection },
   { id: 'sic', label: 'Specified Illness Cover', Comp: SpecifiedIllness },
   { id: 'life', label: 'Life Cover', Comp: LifeCover },
-  { id: 'resilience', label: 'Resilience Summary', Comp: ResilienceSummary },
+  {
+    id: 'resilience',
+    label: 'Financial Resilience Strategy',
+    Comp: ResilienceSummary,
+    props: {
+      title: 'Financial Resilience Strategy',
+      subtitle: 'Combined household protection summary.',
+    },
+  },
+  {
+    id: 'revised',
+    label: 'Revised Resilience Summary',
+    Comp: ResilienceSummary,
+    props: {
+      title: 'Revised Financial Resilience Strategy',
+      subtitle: 'Revised combined household protection summary.',
+    },
+  },
   { id: 'mortgage', label: 'Mortgage vs Life Term', Comp: MortgageVsLifeTerm },
 ];
 
@@ -29,7 +46,8 @@ export default function App() {
     setActive(id);
     window.location.hash = id;
   };
-  const ActiveComp = TABS.find((t) => t.id === active).Comp;
+  const activeTab = TABS.find((t) => t.id === active);
+  const ActiveComp = activeTab.Comp;
 
   if (!authed) return <Login onSuccess={() => setAuthed(true)} />;
 
@@ -61,7 +79,7 @@ export default function App() {
             ))}
           </nav>
 
-          <ActiveComp />
+          <ActiveComp {...(activeTab.props || {})} />
         </main>
       </div>
     </CalculatorProvider>

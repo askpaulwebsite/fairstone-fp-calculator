@@ -2,7 +2,10 @@ import { useCalc } from '../state/CalculatorContext.jsx';
 import { Card } from '../components/ui.jsx';
 import { eur, eur2, pct } from '../lib/format.js';
 
-export default function ResilienceSummary() {
+export default function ResilienceSummary({
+  title = 'Financial Resilience Strategy',
+  subtitle = 'Combined household protection summary.',
+}) {
   const { inputs, derived } = useCalc();
   const two = inputs.hasSecondHolder;
   const r = derived.resilience;
@@ -11,8 +14,8 @@ export default function ResilienceSummary() {
   return (
     <>
       <div className="page-head">
-        <h1>Financial Resilience Strategy</h1>
-        <p>Combined household protection summary.</p>
+        <h1>{title}</h1>
+        <p>{subtitle}</p>
       </div>
 
       <div className="metric-band">

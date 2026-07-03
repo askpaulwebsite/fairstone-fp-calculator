@@ -1,0 +1,63 @@
+:root {
+  /* Primary */
+  --color-purple:      #24174C;
+  --color-purple-80:   rgba(36, 23, 76, 0.80);
+  --color-purple-60:   rgba(36, 23, 76, 0.60);
+  --color-purple-40:   rgba(36, 23, 76, 0.40);
+  --color-purple-20:   rgba(36, 23, 76, 0.20);
+  --color-purple-10:   rgba(36, 23, 76, 0.10);
+  --color-purple-05:   rgba(36, 23, 76, 0.05);
+
+  /* Secondary */
+  --color-green:       #29BB89;
+  --color-green-dark:  #23A076;
+  --color-green-20:    rgba(41, 187, 137, 0.20);
+  --color-green-12:    rgba(41, 187, 137, 0.12);
+
+  /* Tertiary */
+  --color-blue:        #71C5E8;
+  --color-pink:        #F02D6E;
+
+  /* Support */
+  --color-light-purple:#7C6992;
+  --color-slate:       #333F48;
+  --color-charcoal:    #2D2D2D;
+  --color-white:       #FFFFFF;
+
+  /* Surfaces */
+  --color-bg-light:    #F8F8F8;
+  --color-bg-dark:     #24174C;
+  --color-bg-card:     #FFFFFF;
+
+  /* Typography */
+  --font-heading: 'Montserrat', sans-serif;
+  --font-body:    'Open Sans', sans-serif;
+
+  /* Spacing (8px system) */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* Layout */
+  --container-max: 1360px;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(36, 23, 76, 0.08);
+  --shadow-md: 0 4px 12px rgba(36, 23, 76, 0.12);
+  --shadow-lg: 0 8px 24px rgba(36, 23, 76, 0.16);
+  --shadow-xl: 0 16px 48px rgba(36, 23, 76, 0.20);
+
+  /* Easing */
+  --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}

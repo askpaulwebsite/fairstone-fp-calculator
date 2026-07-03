@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Login, { isAuthed, logout } from './components/Login.jsx';
 import { CalculatorProvider } from './state/CalculatorContext.jsx';
 import ClientDetails from './tabs/ClientDetails.jsx';
 import IncomeProtection from './tabs/IncomeProtection.jsx';
@@ -22,6 +23,7 @@ const initialTab = () => {
 };
 
 export default function App() {
+  const [authed, setAuthed] = useState(isAuthed);
   const [active, setActive] = useState(initialTab);
   const selectTab = (id) => {
     setActive(id);
@@ -29,12 +31,19 @@ export default function App() {
   };
   const ActiveComp = TABS.find((t) => t.id === active).Comp;
 
+  if (!authed) return <Login onSuccess={() => setAuthed(true)} />;
+
   return (
     <CalculatorProvider>
       <div className="app">
         <header className="topbar">
           <img className="topbar__logo" src={`${import.meta.env.BASE_URL}Logo_FairstoneIreland_White.svg`} alt="Fairstone Ireland" />
-          <span className="topbar__title">Financial Protection Calculator</span>
+          <div className="topbar__right">
+            <span className="topbar__title">Financial Protection Calculator</span>
+            <button className="topbar__logout" onClick={() => { logout(); setAuthed(false); }}>
+              Sign out
+            </button>
+          </div>
         </header>
 
         <main className="main">

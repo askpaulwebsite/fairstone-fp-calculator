@@ -7,6 +7,7 @@ import SpecifiedIllness from './tabs/SpecifiedIllness.jsx';
 import LifeCover from './tabs/LifeCover.jsx';
 import ResilienceSummary from './tabs/ResilienceSummary.jsx';
 import MortgageVsLifeTerm from './tabs/MortgageVsLifeTerm.jsx';
+import AdvisorDocuments from './tabs/AdvisorDocuments.jsx';
 
 const TABS = [
   { id: 'client', label: 'Client Details', Comp: ClientDetails },
@@ -18,20 +19,23 @@ const TABS = [
     label: 'Financial Resilience Strategy',
     Comp: ResilienceSummary,
     props: {
+      variant: 'recommended',
       title: 'Financial Resilience Strategy',
-      subtitle: 'Combined household protection summary.',
+      subtitle: 'Recommended combined household protection summary.',
     },
   },
   {
     id: 'revised',
-    label: 'Revised Resilience Summary',
+    label: 'Revised Resilience Strategy',
     Comp: ResilienceSummary,
     props: {
+      variant: 'revised',
       title: 'Revised Financial Resilience Strategy',
-      subtitle: 'Revised combined household protection summary.',
+      subtitle: 'Cover the client has chosen to proceed with (lower than recommended).',
     },
   },
   { id: 'mortgage', label: 'Mortgage vs Life Term', Comp: MortgageVsLifeTerm },
+  { id: 'documents', label: 'Advisor Documents', Comp: AdvisorDocuments },
 ];
 
 const initialTab = () => {

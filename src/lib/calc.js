@@ -54,6 +54,27 @@ export function makeDefaultInputs() {
     sicJointPremium: 0,   // Specified Illness K29 (single joint premium)
     mortgage: { years: 30, amount: 380000 }, // Mortgage p. vs life term B4 / C4
     hasSecondHolder: false,
+
+    // Revised Financial Resilience Strategy — advisor overrides for the
+    // "lower than recommended" scenario. null on a field ⇒ use the recommended value.
+    revised: {
+      ipAnnual: [null, null],   // IP annual cover per client
+      ipNetCost: [null, null],  // IP net monthly cost per client
+      sicLump: [null, null],    // SIC lump sum / resilience value per client
+      sicNetCost: null,         // SIC joint net monthly cost
+      lifeLump: [null, null],   // Life lump sum per client
+      lifeNetCost: null,        // Life net monthly cost
+    },
+
+    // Fields that personalise the client letter / PDF.
+    letter: {
+      clientNames: '',
+      advisorName: '',
+      consultationVia: 'MS Teams',
+      consultationDate: '',
+      nextMeetingDay: '',
+      nextMeetingTime: '',
+    },
   };
 }
 
@@ -149,40 +170,122 @@ function computeSIC(inputs, holders) {
 }
 
 // --------------------------- Resilience summary ----------------------------
-function computeResilience(inputs, holders, sic) {
-  const a = inputs.assumptions;
-  const resValueIP = (h) =>
-    h.age === null ? 0 : h.ip.maxCover * (a.ceaseAge - h.age) - h.ip.maxCover; // K8
+// IP resilience value: annualCover*(ceaseAge-age) - annualCover  (Excel K8)
+// Guarded like the rest of the engine: clamp the term and the result at 0 so a
+// client at/above cease age never yields a negative Financial Resilience Value.
+function ipResValue(annualCover, age, ceaseAge) {
+  if (age === null) return 0;
+  const years = Math.max(0, ceaseAge - age);
+  return Math.max(0, annualCover * years - annualCover);
+}
 
+// override helper: blank/null ⇒ fall back to the recommended default.
+function ov(v, d) {
+  return v === null || v === undefined || v === '' || Number.isNaN(Number(v)) ? d : Number(v);
+}
+
+// Build the resilience summary. `get` supplies each editable value (recommended
+// = identity; revised = pulls from the advisor overrides).
+function buildResilience(inputs, holders, sic, get) {
+  const a = inputs.assumptions;
+  const two = inputs.hasSecondHolder;
   const c1 = holders[0];
   const c2 = holders[1];
 
+  const ipAnnual1 = get.ipAnnual(0, c1.ip.maxCover);
+  const ipAnnual2 = get.ipAnnual(1, c2.ip.maxCover);
+
   const rows = {
     ip: {
-      annual1: c1.ip.maxCover, res1: resValueIP(c1), cost1: c1.ip.primaryNet,       // J8/K8/L8
-      annual2: c2.ip.maxCover, res2: resValueIP(c2), cost2: c2.ip.primaryNet,       // N8/P8/Q8
+      annual1: ipAnnual1, res1: ipResValue(ipAnnual1, c1.age, a.ceaseAge), cost1: get.ipCost(0, c1.ip.primaryNet),
+      annual2: ipAnnual2, res2: ipResValue(ipAnnual2, c2.age, a.ceaseAge), cost2: get.ipCost(1, c2.ip.primaryNet),
     },
     sic: {
-      res1: sic.c1.quote, res2: sic.c2.quote,                                        // K9/P9
-      cost: sic.jointPremium,                                                        // S9
+      res1: get.sicLump(0, sic.c1.quote), res2: get.sicLump(1, sic.c2.quote), cost: get.sicCost(sic.jointPremium),
     },
     life: {
-      res1: c1.life.quote, res2: c2.life.quote,                                      // K10/P10
-      cost: c1.life.premiumAfterDiscount,                                            // S10 (holder1)
+      res1: get.lifeLump(0, c1.life.quote), res2: get.lifeLump(1, c2.life.quote), cost: get.lifeCost(c1.life.premiumAfterDiscount),
+    },
+    // "Cover Until" numbers + Benefit labels shown in the summary table.
+    meta: {
+      ceaseAge: a.ceaseAge,     // IP row
+      sicTerm: sic.term,        // SIC row
+      lifeTerm: c1.life.term,   // Life row (D = 25 - youngest child age)
     },
   };
 
   const total1 = rows.ip.res1 + rows.sic.res1 + rows.life.res1;                      // K12
-  const total2 = inputs.hasSecondHolder ? rows.ip.res2 + rows.sic.res2 + rows.life.res2 : 0; // P12
+  const total2 = two ? rows.ip.res2 + rows.sic.res2 + rows.life.res2 : 0;            // P12
   const netMonthlyCost =
-    (rows.ip.cost1 + (inputs.hasSecondHolder ? rows.ip.cost2 : 0)) +
-    rows.sic.cost + rows.life.cost;                                                  // S12
+    (rows.ip.cost1 + (two ? rows.ip.cost2 : 0)) + rows.sic.cost + rows.life.cost;    // S12
   const combinedHousehold = total1 + total2;                                         // L16
 
-  const householdNetMonthly = c1.netMonthly + (inputs.hasSecondHolder ? c2.netMonthly : 0); // J16
+  const householdNetMonthly = c1.netMonthly + (two ? c2.netMonthly : 0);             // J16
   const premiumPctNet = householdNetMonthly > 0 ? netMonthlyCost / householdNetMonthly : null; // L19
 
   return { rows, total1, total2, netMonthlyCost, combinedHousehold, premiumPctNet };
+}
+
+// Recommended: every value is the calculator's own default.
+const RECOMMENDED_GET = {
+  ipAnnual: (i, d) => d, ipCost: (i, d) => d,
+  sicLump: (i, d) => d, sicCost: (d) => d,
+  lifeLump: (i, d) => d, lifeCost: (d) => d,
+};
+
+// Revised: pull from the advisor overrides, falling back to recommended.
+function revisedGet(rev) {
+  return {
+    ipAnnual: (i, d) => ov(rev.ipAnnual[i], d),
+    ipCost: (i, d) => ov(rev.ipNetCost[i], d),
+    sicLump: (i, d) => ov(rev.sicLump[i], d),
+    sicCost: (d) => ov(rev.sicNetCost, d),
+    lifeLump: (i, d) => ov(rev.lifeLump[i], d),
+    lifeCost: (d) => ov(rev.lifeNetCost, d),
+  };
+}
+
+// Shape a resilience result into the row structure used by the summary table
+// (and the PDF). Mirrors the layout of the Excel "Financial Resilience Strategy".
+export function shapeResilience(res, two) {
+  const r = res.rows;
+  const rows = [
+    {
+      key: 'ip', type: 'Income Protection',
+      coverLabel: 'Cease Age', coverValue: r.meta.ceaseAge, benefit: 'Gross Annual Income',
+      cells: [
+        { annual: r.ip.annual1, res: r.ip.res1, cost: r.ip.cost1 },
+        { annual: r.ip.annual2, res: r.ip.res2, cost: r.ip.cost2 },
+      ],
+      combined: r.ip.cost1 + (two ? r.ip.cost2 : 0),
+    },
+    {
+      key: 'sic', type: 'Specified Illness Cover',
+      coverLabel: 'Term (Years)', coverValue: r.meta.sicTerm, benefit: 'Lump Sum',
+      cells: [
+        { annual: null, res: r.sic.res1, cost: null },
+        { annual: null, res: r.sic.res2, cost: null },
+      ],
+      combined: r.sic.cost,
+    },
+    {
+      key: 'life', type: 'Life Cover',
+      coverLabel: 'Term (Years)', coverValue: r.meta.lifeTerm, benefit: 'Lump Sum',
+      cells: [
+        { annual: null, res: r.life.res1, cost: null },
+        { annual: null, res: r.life.res2, cost: null },
+      ],
+      combined: r.life.cost,
+    },
+  ];
+  return {
+    two,
+    rows,
+    totalsPerClient: [res.total1, res.total2],
+    totalCombined: res.netMonthlyCost,
+    combinedHousehold: res.combinedHousehold,
+    premiumPctNet: res.premiumPctNet,
+  };
 }
 
 // --------------------------- Mortgage vs life term -------------------------
@@ -205,7 +308,8 @@ export function computeAll(inputs, today = new Date()) {
     computeHolder(h, a, inputs.household, today)
   );
   const sic = computeSIC(inputs, holders);
-  const resilience = computeResilience(inputs, holders, sic);
+  const resilience = buildResilience(inputs, holders, sic, RECOMMENDED_GET);
+  const revisedResilience = buildResilience(inputs, holders, sic, revisedGet(inputs.revised));
 
   // Client Details combined totals (J14/J15/J16)
   const combined = {
@@ -214,5 +318,5 @@ export function computeAll(inputs, today = new Date()) {
     netMonthly: holders[0].netMonthly + (inputs.hasSecondHolder ? holders[1].netMonthly : 0),
   };
 
-  return { holders, sic, resilience, combined, mortgagePa: holders[0].mortgagePa };
+  return { holders, sic, resilience, revisedResilience, combined, mortgagePa: holders[0].mortgagePa };
 }

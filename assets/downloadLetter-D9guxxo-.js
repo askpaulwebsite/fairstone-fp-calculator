@@ -1,1 +1,0 @@
-import{r as e}from"./react-pdf.browser-D5xE1H8w.js";async function t(t,n){let r=await e(t).toBlob(),i=URL.createObjectURL(r),a=document.createElement(`a`);a.href=i,a.download=n,a.rel=`noopener`,document.body.appendChild(a),a.click(),a.remove(),setTimeout(()=>URL.revokeObjectURL(i),1e3)}export{t as downloadPdf};

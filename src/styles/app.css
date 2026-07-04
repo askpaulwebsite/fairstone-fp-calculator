@@ -139,6 +139,8 @@ button { font-family: var(--font-body); cursor: pointer; }
 }
 
 .page-head { margin-bottom: var(--space-xl); }
+.page-head--row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-lg); flex-wrap: wrap; }
+.page-head__actions { display: flex; gap: var(--space-sm); flex-shrink: 0; padding-top: 6px; }
 .page-head h1 {
   font-size: clamp(26px, 3.5vw, 36px);
   font-weight: 700;

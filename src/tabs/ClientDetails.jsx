@@ -1,6 +1,7 @@
 import { useCalc } from '../state/CalculatorContext.jsx';
 import { Card } from '../components/ui.jsx';
 import { eur } from '../lib/format.js';
+import { makeExampleInputs, makeDefaultInputs } from '../lib/calc.js';
 
 const OCC_CLASSES = ['', 'Class 1', 'Class 2', 'Class 3', 'Class 4'];
 const YESNO = ['No', 'Yes'];
@@ -22,7 +23,7 @@ function Row({ label, pencil, render, combined }) {
 }
 
 export default function ClientDetails() {
-  const { inputs, derived, setHolder, setField } = useCalc();
+  const { inputs, derived, setHolder, setField, setInputs } = useCalc();
   const two = inputs.hasSecondHolder;
   const [h1, h2] = inputs.holders;
   const [d1, d2] = derived.holders;
@@ -56,9 +57,15 @@ export default function ClientDetails() {
 
   return (
     <>
-      <div className="page-head">
-        <h1>Client Details</h1>
-        <p>Enter the household details below. Every other tab updates automatically.</p>
+      <div className="page-head page-head--row">
+        <div>
+          <h1>Client Details</h1>
+          <p>Enter the household details below. Every other tab updates automatically.</p>
+        </div>
+        <div className="page-head__actions">
+          <button className="btn-secondary" onClick={() => setInputs(makeExampleInputs())}>Load example data</button>
+          <button className="btn-secondary" onClick={() => setInputs(makeDefaultInputs())}>Clear all</button>
+        </div>
       </div>
 
       <Card>

@@ -78,6 +78,43 @@ export function makeDefaultInputs() {
   };
 }
 
+// Demo data: a typical mid-earner Irish household (couple with a young child).
+// Used by the "Load example data" button so an advisor can preview a filled letter.
+export function makeExampleInputs() {
+  const i = makeDefaultInputs();
+  i.hasSecondHolder = true;
+
+  const [a, b] = i.holders;
+  a.name = 'Seán'; a.dob = '1988-03-12'; a.occupationClass = 'Class 1'; a.smoker = 'No';
+  a.grossAnnualIncome = 48000; a.netMonthlyIncome = 3080;
+  a.ipRows[0].premium = 95; a.lifePremium = 35;
+
+  b.name = 'Aoife'; b.dob = '1990-07-08'; b.occupationClass = 'Class 1'; b.smoker = 'No';
+  b.grossAnnualIncome = 42000; b.netMonthlyIncome = 2775;
+  b.ipRows[0].premium = 82; b.lifePremium = 30;
+
+  i.household.youngestChildAge = 4;
+  i.household.mortgageMonthly = 1450;
+  i.sicJointPremium = 68;
+
+  // "Lower than recommended" scenario: the client trims Income Protection and
+  // Specified Illness cover; Life cover left at the recommended level.
+  i.revised.ipAnnual = [22000, 20000];
+  i.revised.ipNetCost = [58, 50];
+  i.revised.sicLump = [40000, 35000];
+  i.revised.sicNetCost = 55;
+
+  i.letter = {
+    clientNames: 'Seán & Aoife Murphy',
+    advisorName: 'David Kelly',
+    consultationVia: 'MS Teams',
+    consultationDate: '4 July 2026',
+    nextMeetingDay: 'Thursday 17 July',
+    nextMeetingTime: '11:00am',
+  };
+  return i;
+}
+
 // --------------------------- per-holder derivations ------------------------
 function computeHolder(h, a, household, today) {
   const gross = toNum(h.grossAnnualIncome);

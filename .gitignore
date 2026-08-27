@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# single-file build output
+dist-singlefile
+fairstone-fp-calculator.html

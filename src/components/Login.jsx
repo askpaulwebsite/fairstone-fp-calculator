@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import logoUrl from '../assets/Logo_FairstoneIreland_White.svg';
 
 // NOTE: This is a client-side gate only. On a public static site the credentials
 // are visible in the shipped JS — it deters casual access, it is not real security.
@@ -43,7 +44,7 @@ export default function Login({ onSuccess }) {
       <form className="login__card" onSubmit={submit}>
         <img
           className="login__logo"
-          src={`${import.meta.env.BASE_URL}Logo_FairstoneIreland_White.svg`}
+          src={logoUrl}
           alt="Fairstone Ireland"
         />
         <h1 className="login__title">Financial Protection Calculator</h1>

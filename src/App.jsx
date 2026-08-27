@@ -8,6 +8,7 @@ import LifeCover from './tabs/LifeCover.jsx';
 import ResilienceSummary from './tabs/ResilienceSummary.jsx';
 import MortgageVsLifeTerm from './tabs/MortgageVsLifeTerm.jsx';
 import AdvisorDocuments from './tabs/AdvisorDocuments.jsx';
+import logoUrl from './assets/Logo_FairstoneIreland_White.svg';
 
 const TABS = [
   { id: 'client', label: 'Client Details', Comp: ClientDetails },
@@ -95,7 +96,7 @@ export default function App() {
     <CalculatorProvider>
       <div className="app">
         <header className="topbar">
-          <img className="topbar__logo" src={`${import.meta.env.BASE_URL}Logo_FairstoneIreland_White.svg`} alt="Fairstone Ireland" />
+          <img className="topbar__logo" src={logoUrl} alt="Fairstone Ireland" />
           <div className="topbar__right">
             <span className="topbar__title">Financial Protection Calculator</span>
             <button className="topbar__logout" onClick={() => { logout(); setAuthed(false); }}>

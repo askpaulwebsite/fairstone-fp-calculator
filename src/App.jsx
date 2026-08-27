@@ -54,6 +54,13 @@ const NAV_ITEMS = [
   { tab: 'documents' },
 ];
 
+// Mobile drawer shows a flat list: group entries expand into standalone links.
+const DRAWER_ITEMS = NAV_ITEMS.flatMap((item) =>
+  item.group
+    ? item.items.map((s) => ({ id: s.id, label: `${item.group} ${s.label}` }))
+    : [{ id: item.tab }]
+);
+
 const initialTab = () => {
   const h = window.location.hash.replace('#', '');
   return TABS.some((t) => t.id === h) ? h : 'client';
@@ -109,37 +116,17 @@ export default function App() {
           <div className="drawer__backdrop" onClick={() => setMenuOpen(false)} />
           <nav className="drawer__panel" aria-label="Sections">
             <div className="drawer__eyebrow">Financial Protection Calculator</div>
-            {NAV_ITEMS.map((item, i) => {
-              const num = String(i + 1).padStart(2, '0');
-              if (item.group) {
-                return (
-                  <div key={item.group} className="drawer__section" style={{ '--i': i }}>
-                    <div className="drawer__section-label">
-                      <span className="drawer__num">{num}</span>
-                      {item.group}
-                    </div>
-                    {item.items.map((s) => (
-                      <button
-                        key={s.id}
-                        className={`drawer__link drawer__link--sub${active === s.id ? ' is-active' : ''}`}
-                        onClick={() => selectTab(s.id)}
-                      >
-                        {s.label}
-                      </button>
-                    ))}
-                  </div>
-                );
-              }
-              const t = TABS.find((x) => x.id === item.tab);
+            {DRAWER_ITEMS.map((item, i) => {
+              const label = item.label || TABS.find((x) => x.id === item.id).label;
               return (
                 <button
-                  key={t.id}
-                  className={`drawer__link${active === t.id ? ' is-active' : ''}`}
+                  key={item.id}
+                  className={`drawer__link${active === item.id ? ' is-active' : ''}`}
                   style={{ '--i': i }}
-                  onClick={() => selectTab(t.id)}
+                  onClick={() => selectTab(item.id)}
                 >
-                  <span className="drawer__num">{num}</span>
-                  {t.label}
+                  <span className="drawer__num">{String(i + 1).padStart(2, '0')}</span>
+                  {label}
                 </button>
               );
             })}

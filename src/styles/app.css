@@ -312,19 +312,16 @@ button { font-family: var(--font-body); cursor: pointer; }
     margin-bottom: var(--space-md);
   }
 
-  .drawer__link,
-  .drawer__section {
+  .drawer__link {
     opacity: 0;
     transform: translateX(16px);
     transition: opacity 320ms ease, transform 320ms var(--ease-out);
   }
-  .drawer--open .drawer__link,
-  .drawer--open .drawer__section {
+  .drawer--open .drawer__link {
     opacity: 1;
     transform: none;
     transition-delay: calc(50ms + var(--i, 0) * 35ms);
   }
-  .drawer__section .drawer__link { transition-delay: inherit; }
 
   .drawer__link {
     display: flex;
@@ -353,23 +350,6 @@ button { font-family: var(--font-body); cursor: pointer; }
     font-weight: 700;
     letter-spacing: 0.08em;
     color: var(--color-green);
-  }
-  .drawer__section-label {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    padding: 13px 14px 4px;
-    border-left: 3px solid transparent;
-    font-family: var(--font-heading);
-    font-weight: 600;
-    font-size: 15px;
-    color: rgba(255, 255, 255, 0.85);
-  }
-  .drawer__link--sub {
-    padding: 10px 14px 10px 43px;
-    font-size: 14px;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.72);
   }
   .drawer__signout {
     margin-top: auto;
@@ -775,4 +755,53 @@ table.rtable tr.rtable__total td {
   /* Chart controls stack full-width */
   .chart-controls { flex-direction: column; gap: var(--space-md); }
   .chart-controls .field { width: 100%; }
+
+  /* Collapsible client sections */
+  .m-holder__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--color-green);
+    padding: 8px 0 6px;
+    font-family: var(--font-heading);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-purple);
+  }
+  .m-holder__chevron {
+    font-size: 11px;
+    color: var(--color-green);
+    transition: transform 250ms var(--ease-out);
+  }
+  .m-holder--collapsible.is-open .m-holder__chevron { transform: rotate(180deg); }
+  .m-holder--collapsible:not(.is-open) { margin-bottom: var(--space-md); }
+
+  /* Resilience metric boxes: bigger titles */
+  .metric__label { font-size: 15px; opacity: 0.92; line-height: 1.4; }
+  .metric__value { font-size: 30px; }
+
+  /* Resilience table: fit the card, freeze the first column */
+  table.rtable { min-width: 720px; font-size: 12px; }
+  table.rtable th { padding: 7px 8px; }
+  table.rtable td { padding: 8px 8px; }
+  .rtable__input { max-width: 92px; }
+  table.rtable th.rtable__type,
+  table.rtable td.rtable__type {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    min-width: 118px;
+    max-width: 138px;
+    box-shadow: 6px 0 8px -6px rgba(36, 23, 76, 0.30);
+  }
+  table.rtable td.rtable__type { background: var(--color-bg-card); }
+  table.rtable th.rtable__type { background: var(--color-purple); }
+  table.rtable tr.rtable__total td.rtable__type { background: var(--color-white); }
 }

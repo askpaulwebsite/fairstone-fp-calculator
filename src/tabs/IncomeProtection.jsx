@@ -2,6 +2,7 @@ import { useCalc } from '../state/CalculatorContext.jsx';
 import { Card, DataRow } from '../components/ui.jsx';
 import { eur, eur2, pct, years, num } from '../lib/format.js';
 import useIsMobile from '../lib/useIsMobile.js';
+import MobileSection from '../components/MobileSection.jsx';
 
 function HolderBlock({ idx }) {
   const { inputs, derived, setHolder, setIpRow } = useCalc();
@@ -16,8 +17,8 @@ function HolderBlock({ idx }) {
       onChange={(e) => setIpRow(idx, ri, key, Number(e.target.value || 0))} />
   );
 
-  return (
-    <Card title={`${h.name || `Client ${idx + 1}`} — Quotation Summary`}>
+  const body = (
+    <>
       <div className="grid-2">
         <div>
           <DataRow label="Gross Annual Income" value={eur(d.gross)} muted />
@@ -134,8 +135,20 @@ function HolderBlock({ idx }) {
       <p className="card__subtitle" style={{ margin: '8px 0 0' }}>
         Row 1 (highlighted) is the recommended maximum cover and feeds the Resilience Summary.
       </p>
-    </Card>
+    </>
   );
+
+  const title = `${h.name || `Client ${idx + 1}`} — Quotation Summary`;
+  if (isMobile) {
+    return (
+      <Card>
+        <MobileSection title={h.name || `Client ${idx + 1}`} defaultOpen={idx === 0}>
+          {body}
+        </MobileSection>
+      </Card>
+    );
+  }
+  return <Card title={title}>{body}</Card>;
 }
 
 export default function IncomeProtection() {

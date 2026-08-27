@@ -149,7 +149,7 @@ export default function ResilienceSummary({
                 </tr>
               ))}
               <tr className="rtable__total">
-                <td colSpan={3}>Total</td>
+                <td className="rtable__type">Total</td><td></td><td></td>
                 <td></td><td className="strong">{eur(shape.totalsPerClient[0])}</td><td></td>
                 {two && <><td></td><td className="strong">{eur(shape.totalsPerClient[1])}</td><td></td></>}
                 <td className="strong">{eur2(shape.totalCombined)}</td>

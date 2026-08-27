@@ -45,7 +45,7 @@ export default function MortgageVsLifeTerm() {
                 tick={{ fill: '#7C6992', fontSize: isMobile ? 11 : 12 }} width={isMobile ? 48 : 70} />
               <Tooltip formatter={(v) => eur(v)} labelFormatter={(l) => `Year ${l}`}
                 contentStyle={{ borderRadius: 12, border: '1px solid rgba(36,23,76,0.10)', fontFamily: 'Open Sans' }} />
-              <Legend />
+              <Legend wrapperStyle={{ paddingTop: isMobile ? 18 : 8 }} />
               <Line type="monotone" dataKey="mortgageProtection" name="Mortgage Protection"
                 stroke="#F02D6E" strokeWidth={2.5} dot={false} isAnimationActive={false} />
               <Line type="monotone" dataKey="lifeTerm" name="Life / Convertible Term"

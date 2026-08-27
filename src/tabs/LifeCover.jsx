@@ -1,9 +1,12 @@
 import { useCalc } from '../state/CalculatorContext.jsx';
 import { Card, DataRow } from '../components/ui.jsx';
 import { eur, eur2, years } from '../lib/format.js';
+import useIsMobile from '../lib/useIsMobile.js';
+import MobileSection from '../components/MobileSection.jsx';
 
 function HolderBlock({ idx }) {
   const { inputs, derived, setHolder } = useCalc();
+  const isMobile = useIsMobile();
   const h = inputs.holders[idx];
   const L = derived.holders[idx].life;
 
@@ -12,8 +15,8 @@ function HolderBlock({ idx }) {
       onChange={(e) => setHolder(idx, key, Number(e.target.value || 0))} />
   );
 
-  return (
-    <Card title={`${h.name || `Client ${idx + 1}`} — Life Cover Calculation`}>
+  const body = (
+    <>
       <div className="grid-2">
         <div>
           <DataRow label="Net Annual After-Tax Income (A)" value={eur(L.A)} />
@@ -64,8 +67,19 @@ function HolderBlock({ idx }) {
           <DataRow label="Premium after Discount" value={eur2(L.premiumAfterDiscount)} total />
         </Card>
       </div>
-    </Card>
+    </>
   );
+
+  if (isMobile) {
+    return (
+      <Card>
+        <MobileSection title={h.name || `Client ${idx + 1}`} defaultOpen={idx === 0}>
+          {body}
+        </MobileSection>
+      </Card>
+    );
+  }
+  return <Card title={`${h.name || `Client ${idx + 1}`} — Life Cover Calculation`}>{body}</Card>;
 }
 
 export default function LifeCover() {

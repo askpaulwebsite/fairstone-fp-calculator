@@ -2,6 +2,7 @@ import { useCalc } from '../state/CalculatorContext.jsx';
 import { Card } from '../components/ui.jsx';
 import { eur, num, years } from '../lib/format.js';
 import useIsMobile from '../lib/useIsMobile.js';
+import MobileSection from '../components/MobileSection.jsx';
 
 export default function SpecifiedIllness() {
   const { inputs, derived, setHolder, setField } = useCalc();
@@ -42,8 +43,7 @@ export default function SpecifiedIllness() {
             const c = idx === 0 ? sic.c1 : sic.c2;
             const h = inputs.holders[idx];
             return (
-              <section key={idx} className="m-holder">
-                <h3 className="m-holder__title">{h.name || `Client ${idx + 1}`}</h3>
+              <MobileSection key={idx} defaultOpen={idx === 0} title={h.name || `Client ${idx + 1}`}>
                 {ROWS.map((r) => (
                   <div className="m-field" key={r.label}>
                     <span className="m-field__label">
@@ -55,7 +55,7 @@ export default function SpecifiedIllness() {
                       : <span className="m-field__value">{r.val(c)}</span>}
                   </div>
                 ))}
-              </section>
+              </MobileSection>
             );
           })
         ) : (

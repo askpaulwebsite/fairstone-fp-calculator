@@ -3,6 +3,7 @@ import { Card } from '../components/ui.jsx';
 import { eur } from '../lib/format.js';
 import { makeExampleInputs, makeDefaultInputs } from '../lib/calc.js';
 import useIsMobile from '../lib/useIsMobile.js';
+import MobileSection from '../components/MobileSection.jsx';
 
 const OCC_CLASSES = ['', 'Class 1', 'Class 2', 'Class 3', 'Class 4'];
 const YESNO = ['No', 'Yes'];
@@ -102,8 +103,8 @@ export default function ClientDetails() {
         {isMobile ? (
           <>
             {[0, ...(two ? [1] : [])].map((idx) => (
-              <section key={idx} className="m-holder">
-                <h3 className="m-holder__title">{inputs.holders[idx].name || `Client ${idx + 1}`}</h3>
+              <MobileSection key={idx} defaultOpen={idx === 0}
+                title={inputs.holders[idx].name || `Client ${idx + 1}`}>
                 {FIELDS.map((f) => (
                   <div className="m-field" key={f.label}>
                     <span className="m-field__label">
@@ -115,7 +116,7 @@ export default function ClientDetails() {
                       : cell(idx, f)}
                   </div>
                 ))}
-              </section>
+              </MobileSection>
             ))}
             {two && (
               <section className="m-holder">

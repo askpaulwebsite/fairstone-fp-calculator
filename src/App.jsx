@@ -38,6 +38,22 @@ const TABS = [
   { id: 'documents', label: 'Advisor Documents', Comp: AdvisorDocuments },
 ];
 
+const NAV_ITEMS = [
+  { tab: 'client' },
+  { tab: 'income' },
+  { tab: 'sic' },
+  { tab: 'life' },
+  {
+    group: 'Resilience Strategy',
+    items: [
+      { id: 'resilience', label: 'Financial' },
+      { id: 'revised', label: 'Revised' },
+    ],
+  },
+  { tab: 'mortgage' },
+  { tab: 'documents' },
+];
+
 const initialTab = () => {
   const h = window.location.hash.replace('#', '');
   return TABS.some((t) => t.id === h) ? h : 'client';
@@ -70,17 +86,46 @@ export default function App() {
 
         <main className="main">
           <nav className="tabs" role="tablist">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                role="tab"
-                aria-selected={active === t.id}
-                className={`tab${active === t.id ? ' tab--active' : ''}`}
-                onClick={() => selectTab(t.id)}
-              >
-                {t.label}
-              </button>
-            ))}
+            {NAV_ITEMS.map((item) => {
+              if (item.group) {
+                const groupActive = item.items.some((s) => s.id === active);
+                return (
+                  <div
+                    key={item.group}
+                    className={`tab tab--group${groupActive ? ' tab--active' : ''}`}
+                    tabIndex={0}
+                  >
+                    {item.group}
+                    <span className="tab__caret" aria-hidden="true">▾</span>
+                    <div className="tab__menu" role="menu">
+                      {item.items.map((s) => (
+                        <button
+                          key={s.id}
+                          role="tab"
+                          aria-selected={active === s.id}
+                          className={`tab__menu-item${active === s.id ? ' tab__menu-item--active' : ''}`}
+                          onClick={() => selectTab(s.id)}
+                        >
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+              const t = TABS.find((x) => x.id === item.tab);
+              return (
+                <button
+                  key={t.id}
+                  role="tab"
+                  aria-selected={active === t.id}
+                  className={`tab${active === t.id ? ' tab--active' : ''}`}
+                  onClick={() => selectTab(t.id)}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
           </nav>
 
           <ActiveComp {...(activeTab.props || {})} />

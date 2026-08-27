@@ -227,7 +227,11 @@ button { font-family: var(--font-body); cursor: pointer; }
 
 /* ---------- Mobile nav (burger + drawer) ---------- */
 .topbar__burger { display: none; }
+.embed-burger { display: none; }
 .drawer { display: none; }
+
+/* Embed mode: no topbar, so trim the top of the page */
+.app--embed .main { padding-top: var(--space-lg); }
 
 @media (max-width: 900px) {
   .topbar { padding: 0 var(--space-md); }
@@ -260,6 +264,46 @@ button { font-family: var(--font-body); cursor: pointer; }
   }
   .topbar__burger.is-open span:first-child { transform: translateY(4.5px) rotate(45deg); }
   .topbar__burger.is-open span:last-child  { transform: translateY(-4.5px) rotate(-45deg); }
+
+  /* Embed mode: floating burger, no topbar behind it */
+  .embed-burger {
+    display: flex;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 60;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: var(--color-white);
+    border: 1px solid var(--color-purple-10);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    transition: background 250ms ease, border-color 250ms ease;
+  }
+  .embed-burger span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--color-purple);
+    transition: transform 300ms var(--ease-in-out), background 250ms ease;
+  }
+  .embed-burger.is-open {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: none;
+  }
+  .embed-burger.is-open span { background: var(--color-white); }
+  .embed-burger.is-open span:first-child { transform: translateY(4.5px) rotate(45deg); }
+  .embed-burger.is-open span:last-child  { transform: translateY(-4.5px) rotate(-45deg); }
+
+  .drawer.drawer--embed { top: 0; z-index: 55; }
+  .drawer--embed .drawer__panel { padding-top: 64px; } /* clear the floating burger */
 
   .drawer {
     display: block;

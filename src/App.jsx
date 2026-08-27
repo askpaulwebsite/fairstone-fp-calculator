@@ -67,6 +67,18 @@ const initialTab = () => {
   return TABS.some((t) => t.id === h) ? h : 'client';
 };
 
+// Embed mode (inside an iframe, or ?embed=1 to test in a normal tab): no login
+// gate and no purple topbar — the host page provides its own chrome. On mobile
+// the drawer is opened from a floating burger button instead.
+const isEmbedded = (() => {
+  try {
+    if (new URLSearchParams(window.location.search).has('embed')) return true;
+    return window.self !== window.top;
+  } catch {
+    return true; // cross-origin parent access throws → we are framed
+  }
+})();
+
 export default function App() {
   const [authed, setAuthed] = useState(isAuthed);
   const [active, setActive] = useState(initialTab);
@@ -90,30 +102,43 @@ export default function App() {
   const activeTab = TABS.find((t) => t.id === active);
   const ActiveComp = activeTab.Comp;
 
-  if (!authed) return <Login onSuccess={() => setAuthed(true)} />;
+  if (!authed && !isEmbedded) return <Login onSuccess={() => setAuthed(true)} />;
 
   return (
     <CalculatorProvider>
-      <div className="app">
-        <header className="topbar">
-          <img className="topbar__logo" src={logoUrl} alt="Fairstone Ireland" />
-          <div className="topbar__right">
-            <span className="topbar__title">Financial Protection Calculator</span>
-            <button className="topbar__logout" onClick={() => { logout(); setAuthed(false); }}>
-              Sign out
-            </button>
-            <button
-              className={`topbar__burger${menuOpen ? ' is-open' : ''}`}
-              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={menuOpen}
-              onClick={() => setMenuOpen((o) => !o)}
-            >
-              <span /><span />
-            </button>
-          </div>
-        </header>
+      <div className={`app${isEmbedded ? ' app--embed' : ''}`}>
+        {!isEmbedded && (
+          <header className="topbar">
+            <img className="topbar__logo" src={logoUrl} alt="Fairstone Ireland" />
+            <div className="topbar__right">
+              <span className="topbar__title">Financial Protection Calculator</span>
+              <button className="topbar__logout" onClick={() => { logout(); setAuthed(false); }}>
+                Sign out
+              </button>
+              <button
+                className={`topbar__burger${menuOpen ? ' is-open' : ''}`}
+                aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={menuOpen}
+                onClick={() => setMenuOpen((o) => !o)}
+              >
+                <span /><span />
+              </button>
+            </div>
+          </header>
+        )}
 
-        <div className={`drawer${menuOpen ? ' drawer--open' : ''}`} aria-hidden={!menuOpen}>
+        {isEmbedded && (
+          <button
+            className={`embed-burger${menuOpen ? ' is-open' : ''}`}
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((o) => !o)}
+          >
+            <span /><span />
+          </button>
+        )}
+
+        <div className={`drawer${isEmbedded ? ' drawer--embed' : ''}${menuOpen ? ' drawer--open' : ''}`} aria-hidden={!menuOpen}>
           <div className="drawer__backdrop" onClick={() => setMenuOpen(false)} />
           <nav className="drawer__panel" aria-label="Sections">
             <div className="drawer__eyebrow">Financial Protection Calculator</div>
@@ -131,9 +156,11 @@ export default function App() {
                 </button>
               );
             })}
-            <button className="drawer__signout" onClick={() => { logout(); setAuthed(false); }}>
-              Sign out
-            </button>
+            {!isEmbedded && (
+              <button className="drawer__signout" onClick={() => { logout(); setAuthed(false); }}>
+                Sign out
+              </button>
+            )}
           </nav>
         </div>
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Login, { isAuthed, logout } from './components/Login.jsx';
 import { CalculatorProvider } from './state/CalculatorContext.jsx';
 import ClientDetails from './tabs/ClientDetails.jsx';
@@ -62,10 +62,23 @@ const initialTab = () => {
 export default function App() {
   const [authed, setAuthed] = useState(isAuthed);
   const [active, setActive] = useState(initialTab);
+  const [menuOpen, setMenuOpen] = useState(false);
   const selectTab = (id) => {
     setActive(id);
+    setMenuOpen(false);
     window.location.hash = id;
   };
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [menuOpen]);
   const activeTab = TABS.find((t) => t.id === active);
   const ActiveComp = activeTab.Comp;
 
@@ -81,8 +94,60 @@ export default function App() {
             <button className="topbar__logout" onClick={() => { logout(); setAuthed(false); }}>
               Sign out
             </button>
+            <button
+              className={`topbar__burger${menuOpen ? ' is-open' : ''}`}
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((o) => !o)}
+            >
+              <span /><span />
+            </button>
           </div>
         </header>
+
+        <div className={`drawer${menuOpen ? ' drawer--open' : ''}`} aria-hidden={!menuOpen}>
+          <div className="drawer__backdrop" onClick={() => setMenuOpen(false)} />
+          <nav className="drawer__panel" aria-label="Sections">
+            <div className="drawer__eyebrow">Financial Protection Calculator</div>
+            {NAV_ITEMS.map((item, i) => {
+              const num = String(i + 1).padStart(2, '0');
+              if (item.group) {
+                return (
+                  <div key={item.group} className="drawer__section" style={{ '--i': i }}>
+                    <div className="drawer__section-label">
+                      <span className="drawer__num">{num}</span>
+                      {item.group}
+                    </div>
+                    {item.items.map((s) => (
+                      <button
+                        key={s.id}
+                        className={`drawer__link drawer__link--sub${active === s.id ? ' is-active' : ''}`}
+                        onClick={() => selectTab(s.id)}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                );
+              }
+              const t = TABS.find((x) => x.id === item.tab);
+              return (
+                <button
+                  key={t.id}
+                  className={`drawer__link${active === t.id ? ' is-active' : ''}`}
+                  style={{ '--i': i }}
+                  onClick={() => selectTab(t.id)}
+                >
+                  <span className="drawer__num">{num}</span>
+                  {t.label}
+                </button>
+              );
+            })}
+            <button className="drawer__signout" onClick={() => { logout(); setAuthed(false); }}>
+              Sign out
+            </button>
+          </nav>
+        </div>
 
         <main className="main">
           <nav className="tabs" role="tablist">

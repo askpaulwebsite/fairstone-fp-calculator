@@ -225,6 +225,167 @@ button { font-family: var(--font-body); cursor: pointer; }
   color: var(--color-white);
 }
 
+/* ---------- Mobile nav (burger + drawer) ---------- */
+.topbar__burger { display: none; }
+.drawer { display: none; }
+
+@media (max-width: 900px) {
+  .topbar { padding: 0 var(--space-md); }
+  .topbar__title { display: none; }
+  .topbar__logout { display: none; } /* lives in the drawer on mobile */
+  .topbar__logo { height: 34px; }
+  .tabs { display: none; }
+  .main { padding: var(--space-lg) var(--space-md) var(--space-2xl); }
+
+  .topbar__burger {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 44px;
+    height: 44px;
+    margin-right: -8px;
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+  .topbar__burger span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--color-white);
+    transition: transform 300ms var(--ease-in-out);
+  }
+  .topbar__burger.is-open span:first-child { transform: translateY(4.5px) rotate(45deg); }
+  .topbar__burger.is-open span:last-child  { transform: translateY(-4.5px) rotate(-45deg); }
+
+  .drawer {
+    display: block;
+    position: fixed;
+    top: 68px; /* below the sticky topbar so the burger stays reachable */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 49;
+    pointer-events: none;
+  }
+  .drawer__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(36, 23, 76, 0.45);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    opacity: 0;
+    transition: opacity 300ms ease;
+  }
+  .drawer__panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(320px, 86vw);
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-xl) var(--space-lg) var(--space-lg);
+    overflow-y: auto;
+    background:
+      radial-gradient(700px 360px at 110% -5%, rgba(41, 187, 137, 0.22), transparent 60%),
+      var(--color-purple);
+    box-shadow: var(--shadow-xl);
+    transform: translateX(100%);
+    transition: transform 380ms var(--ease-out);
+  }
+  .drawer--open { pointer-events: auto; }
+  .drawer--open .drawer__backdrop { opacity: 1; }
+  .drawer--open .drawer__panel { transform: translateX(0); }
+
+  .drawer__eyebrow {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+    padding: 0 14px;
+    margin-bottom: var(--space-md);
+  }
+
+  .drawer__link,
+  .drawer__section {
+    opacity: 0;
+    transform: translateX(16px);
+    transition: opacity 320ms ease, transform 320ms var(--ease-out);
+  }
+  .drawer--open .drawer__link,
+  .drawer--open .drawer__section {
+    opacity: 1;
+    transform: none;
+    transition-delay: calc(50ms + var(--i, 0) * 35ms);
+  }
+  .drawer__section .drawer__link { transition-delay: inherit; }
+
+  .drawer__link {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    border-left: 3px solid transparent;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    padding: 13px 14px;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .drawer__link:active { background: rgba(255, 255, 255, 0.1); }
+  .drawer__link.is-active {
+    border-left-color: var(--color-green);
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--color-white);
+  }
+  .drawer__num {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--color-green);
+  }
+  .drawer__section-label {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 13px 14px 4px;
+    border-left: 3px solid transparent;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .drawer__link--sub {
+    padding: 10px 14px 10px 43px;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.72);
+  }
+  .drawer__signout {
+    margin-top: auto;
+    align-self: flex-start;
+    margin-left: 14px;
+    padding: 8px 18px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: var(--radius-md);
+  }
+}
+
 /* ---------- Cards ---------- */
 .card {
   background: var(--color-bg-card);

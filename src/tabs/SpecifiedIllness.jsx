@@ -1,35 +1,33 @@
 import { useCalc } from '../state/CalculatorContext.jsx';
 import { Card } from '../components/ui.jsx';
 import { eur, num, years } from '../lib/format.js';
+import useIsMobile from '../lib/useIsMobile.js';
 
 export default function SpecifiedIllness() {
   const { inputs, derived, setHolder, setField } = useCalc();
+  const isMobile = useIsMobile();
   const two = inputs.hasSecondHolder;
   const sic = derived.sic;
   const [h1, h2] = inputs.holders;
 
+  // One definition per row, shared by the desktop grid and the mobile stacked layout.
+  const ROWS = [
+    { label: 'Current Age', val: (c) => num(c.age) },
+    { label: 'Cease Age', val: () => num(inputs.assumptions.ceaseAge) },
+    { label: 'Net Annual Income', val: (c) => eur(c.netAnnual) },
+    { label: 'Existing SIC Cover', input: true },
+    { label: 'Net Annual Loss', val: (c) => eur(c.netLoss) },
+    { label: 'Minimum € Cover (Net Loss × 2)', val: (c) => eur(c.minCover) },
+    { label: 'Quotation Lump Sum (→ nearest 500)', val: (c) => eur(c.quote) },
+  ];
+
+  const coverInput = (idx) => (
+    <input className="input input--money" type="number" value={inputs.holders[idx].sicExistingCover}
+      onChange={(e) => setHolder(idx, 'sicExistingCover', Number(e.target.value || 0))} />
+  );
+
   const HeadCell = ({ children }) => <div>{children}</div>;
   const empty = <span className="holder-row__cell datarow__value--muted">—</span>;
-
-  const derivedRow = (label, v1, v2) => (
-    <div className="holder-row">
-      <span className="holder-row__label">{label}</span>
-      <span className="holder-row__cell" style={{ fontWeight: 600, color: 'var(--color-purple)' }}>{v1}</span>
-      {two ? <span className="holder-row__cell" style={{ fontWeight: 600, color: 'var(--color-purple)' }}>{v2}</span> : empty}
-    </div>
-  );
-
-  const existingRow = (
-    <div className="holder-row">
-      <span className="holder-row__label"><span className="datarow__pencil">✎</span> Existing SIC Cover</span>
-      <input className="input input--money" type="number" value={h1.sicExistingCover}
-        onChange={(e) => setHolder(0, 'sicExistingCover', Number(e.target.value || 0))} />
-      {two ? (
-        <input className="input input--money" type="number" value={h2.sicExistingCover}
-          onChange={(e) => setHolder(1, 'sicExistingCover', Number(e.target.value || 0))} />
-      ) : empty}
-    </div>
-  );
 
   return (
     <>
@@ -39,19 +37,52 @@ export default function SpecifiedIllness() {
       </div>
 
       <Card>
-        <div className="holder-head" style={{ gridTemplateColumns: two ? undefined : '1fr minmax(110px,1fr) minmax(110px,1fr)' }}>
-          <HeadCell>Field</HeadCell>
-          <HeadCell>{h1.name || 'Client 1'}</HeadCell>
-          {two && <HeadCell>{h2.name || 'Client 2'}</HeadCell>}
-        </div>
-
-        {derivedRow('Current Age', num(sic.c1.age), num(sic.c2.age))}
-        {derivedRow('Cease Age', num(inputs.assumptions.ceaseAge), num(inputs.assumptions.ceaseAge))}
-        {derivedRow('Net Annual Income', eur(sic.c1.netAnnual), eur(sic.c2.netAnnual))}
-        {existingRow}
-        {derivedRow('Net Annual Loss', eur(sic.c1.netLoss), eur(sic.c2.netLoss))}
-        {derivedRow('Minimum € Cover (Net Loss × 2)', eur(sic.c1.minCover), eur(sic.c2.minCover))}
-        {derivedRow('Quotation Lump Sum (→ nearest 500)', eur(sic.c1.quote), eur(sic.c2.quote))}
+        {isMobile ? (
+          [0, ...(two ? [1] : [])].map((idx) => {
+            const c = idx === 0 ? sic.c1 : sic.c2;
+            const h = inputs.holders[idx];
+            return (
+              <section key={idx} className="m-holder">
+                <h3 className="m-holder__title">{h.name || `Client ${idx + 1}`}</h3>
+                {ROWS.map((r) => (
+                  <div className="m-field" key={r.label}>
+                    <span className="m-field__label">
+                      {r.input && <span className="datarow__pencil">✎</span>}
+                      {r.label}
+                    </span>
+                    {r.input
+                      ? coverInput(idx)
+                      : <span className="m-field__value">{r.val(c)}</span>}
+                  </div>
+                ))}
+              </section>
+            );
+          })
+        ) : (
+          <>
+            <div className="holder-head" style={{ gridTemplateColumns: two ? undefined : '1fr minmax(110px,1fr) minmax(110px,1fr)' }}>
+              <HeadCell>Field</HeadCell>
+              <HeadCell>{h1.name || 'Client 1'}</HeadCell>
+              {two && <HeadCell>{h2.name || 'Client 2'}</HeadCell>}
+            </div>
+            {ROWS.map((r) => (
+              <div className="holder-row" key={r.label}>
+                <span className="holder-row__label">
+                  {r.input && <span className="datarow__pencil">✎</span>}
+                  {r.label}
+                </span>
+                {r.input ? coverInput(0) : (
+                  <span className="holder-row__cell" style={{ fontWeight: 600, color: 'var(--color-purple)' }}>{r.val(sic.c1)}</span>
+                )}
+                {two
+                  ? (r.input ? coverInput(1) : (
+                      <span className="holder-row__cell" style={{ fontWeight: 600, color: 'var(--color-purple)' }}>{r.val(sic.c2)}</span>
+                    ))
+                  : empty}
+              </div>
+            ))}
+          </>
+        )}
       </Card>
 
       <div className="grid-2">

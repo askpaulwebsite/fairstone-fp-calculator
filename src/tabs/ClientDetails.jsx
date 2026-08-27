@@ -2,9 +2,22 @@ import { useCalc } from '../state/CalculatorContext.jsx';
 import { Card } from '../components/ui.jsx';
 import { eur } from '../lib/format.js';
 import { makeExampleInputs, makeDefaultInputs } from '../lib/calc.js';
+import useIsMobile from '../lib/useIsMobile.js';
 
 const OCC_CLASSES = ['', 'Class 1', 'Class 2', 'Class 3', 'Class 4'];
 const YESNO = ['No', 'Yes'];
+
+// One definition per row, shared by the desktop grid and the mobile stacked layout.
+const FIELDS = [
+  { key: 'name', label: 'Client Name', type: 'text', pencil: true },
+  { key: 'dob', label: 'Date of Birth', type: 'date', pencil: true },
+  { label: 'Age', derived: (d) => d.age ?? '—' },
+  { key: 'occupationClass', label: 'Occupation Class', type: 'select', options: OCC_CLASSES, pencil: true },
+  { key: 'smoker', label: 'Smoker', type: 'select', options: YESNO, pencil: true },
+  { key: 'grossAnnualIncome', label: 'Gross Annual Income', pencil: true, combined: (c) => eur(c.grossAnnual) },
+  { key: 'netMonthlyIncome', label: 'Net Monthly Income', pencil: true, combined: (c) => eur(c.netMonthly) },
+  { label: 'Net Annual Income (× 12)', derived: (d) => eur(d.netAnnual), combined: (c) => eur(c.netAnnual) },
+];
 
 // A grid row with a label + one editable cell per active holder + combined.
 function Row({ label, pencil, render, combined }) {
@@ -24,12 +37,13 @@ function Row({ label, pencil, render, combined }) {
 
 export default function ClientDetails() {
   const { inputs, derived, setHolder, setField, setInputs } = useCalc();
+  const isMobile = useIsMobile();
   const two = inputs.hasSecondHolder;
-  const [h1, h2] = inputs.holders;
-  const [d1, d2] = derived.holders;
+  const [h1] = inputs.holders;
 
-  const cell = (idx, key, type = 'number', opts = {}) => {
+  const cell = (idx, f) => {
     const h = inputs.holders[idx];
+    const { key, type, options } = f;
     if (type === 'text')
       return (
         <input className="input" value={h[key] ?? ''}
@@ -44,7 +58,7 @@ export default function ClientDetails() {
       return (
         <select className="select" value={h[key]}
           onChange={(e) => setHolder(idx, key, e.target.value)}>
-          {opts.options.map((o) => <option key={o} value={o}>{o || '—'}</option>)}
+          {options.map((o) => <option key={o} value={o}>{o || '—'}</option>)}
         </select>
       );
     return (
@@ -54,6 +68,11 @@ export default function ClientDetails() {
   };
 
   const emptyCell = <span className="holder-row__cell datarow__value--muted">—</span>;
+
+  const holderCell = (idx, f) =>
+    f.derived
+      ? <span className="holder-row__cell" key={idx}>{f.derived(derived.holders[idx])}</span>
+      : cell(idx, f);
 
   return (
     <>
@@ -69,7 +88,7 @@ export default function ClientDetails() {
       </div>
 
       <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
           <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13, color: 'var(--color-slate)' }}>
             <input type="checkbox" checked={two}
               onChange={(e) => setField(['hasSecondHolder'], e.target.checked)} />
@@ -80,52 +99,54 @@ export default function ClientDetails() {
           </span>
         </div>
 
-        <div className="holder-head">
-          <div>Field</div>
-          <div>{h1.name || 'Client 1'}</div>
-          <div>{two ? (h2.name || 'Client 2') : ''}</div>
-          <div>Combined</div>
-        </div>
-
-        <Row label="Client Name" pencil combined="" render={<>
-          {cell(0, 'name', 'text')}
-          {two ? cell(1, 'name', 'text') : emptyCell}
-        </>} />
-
-        <Row label="Date of Birth" pencil combined="" render={<>
-          {cell(0, 'dob', 'date')}
-          {two ? cell(1, 'dob', 'date') : emptyCell}
-        </>} />
-
-        <Row label="Age" combined="" render={<>
-          <span className="holder-row__cell">{d1.age ?? '—'}</span>
-          {two ? <span className="holder-row__cell">{d2.age ?? '—'}</span> : emptyCell}
-        </>} />
-
-        <Row label="Occupation Class" pencil combined="" render={<>
-          {cell(0, 'occupationClass', 'select', { options: OCC_CLASSES })}
-          {two ? cell(1, 'occupationClass', 'select', { options: OCC_CLASSES }) : emptyCell}
-        </>} />
-
-        <Row label="Smoker" pencil combined="" render={<>
-          {cell(0, 'smoker', 'select', { options: YESNO })}
-          {two ? cell(1, 'smoker', 'select', { options: YESNO }) : emptyCell}
-        </>} />
-
-        <Row label="Gross Annual Income" pencil combined={eur(derived.combined.grossAnnual)} render={<>
-          {cell(0, 'grossAnnualIncome')}
-          {two ? cell(1, 'grossAnnualIncome') : emptyCell}
-        </>} />
-
-        <Row label="Net Monthly Income" pencil combined={eur(derived.combined.netMonthly)} render={<>
-          {cell(0, 'netMonthlyIncome')}
-          {two ? cell(1, 'netMonthlyIncome') : emptyCell}
-        </>} />
-
-        <Row label="Net Annual Income (× 12)" combined={eur(derived.combined.netAnnual)} render={<>
-          <span className="holder-row__cell">{eur(d1.netAnnual)}</span>
-          {two ? <span className="holder-row__cell">{eur(d2.netAnnual)}</span> : emptyCell}
-        </>} />
+        {isMobile ? (
+          <>
+            {[0, ...(two ? [1] : [])].map((idx) => (
+              <section key={idx} className="m-holder">
+                <h3 className="m-holder__title">{inputs.holders[idx].name || `Client ${idx + 1}`}</h3>
+                {FIELDS.map((f) => (
+                  <div className="m-field" key={f.label}>
+                    <span className="m-field__label">
+                      {f.pencil && <span className="datarow__pencil">✎</span>}
+                      {f.label}
+                    </span>
+                    {f.derived
+                      ? <span className="m-field__value">{f.derived(derived.holders[idx])}</span>
+                      : cell(idx, f)}
+                  </div>
+                ))}
+              </section>
+            ))}
+            {two && (
+              <section className="m-holder">
+                <h3 className="m-holder__title">Combined</h3>
+                {FIELDS.filter((f) => f.combined).map((f) => (
+                  <div className="m-field" key={f.label}>
+                    <span className="m-field__label">{f.label}</span>
+                    <span className="m-field__value">{f.combined(derived.combined)}</span>
+                  </div>
+                ))}
+              </section>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="holder-head">
+              <div>Field</div>
+              <div>{h1.name || 'Client 1'}</div>
+              <div>{two ? (inputs.holders[1].name || 'Client 2') : ''}</div>
+              <div>Combined</div>
+            </div>
+            {FIELDS.map((f) => (
+              <Row key={f.label} label={f.label} pencil={f.pencil}
+                combined={f.combined ? f.combined(derived.combined) : ''}
+                render={<>
+                  {holderCell(0, f)}
+                  {two ? holderCell(1, f) : emptyCell}
+                </>} />
+            ))}
+          </>
+        )}
       </Card>
 
       <div className="grid-2">

@@ -5,9 +5,11 @@ import { useCalc } from '../state/CalculatorContext.jsx';
 import { Card, Field } from '../components/ui.jsx';
 import { computeMortgageSeries } from '../lib/calc.js';
 import { eur } from '../lib/format.js';
+import useIsMobile from '../lib/useIsMobile.js';
 
 export default function MortgageVsLifeTerm() {
   const { inputs, setField } = useCalc();
+  const isMobile = useIsMobile();
   const { years, amount } = inputs.mortgage;
   const data = computeMortgageSeries(years, amount);
 
@@ -30,13 +32,17 @@ export default function MortgageVsLifeTerm() {
           </Field>
         </div>
 
-        <div style={{ width: '100%', height: 420 }}>
+        <div style={{ width: '100%', height: isMobile ? 320 : 420 }}>
           <ResponsiveContainer>
-            <LineChart data={data} margin={{ top: 16, right: 24, left: 24, bottom: 8 }}>
+            <LineChart data={data}
+              margin={isMobile
+                ? { top: 12, right: 8, left: 0, bottom: 4 }
+                : { top: 16, right: 24, left: 24, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(36,23,76,0.10)" />
-              <XAxis dataKey="year" tick={{ fill: '#7C6992', fontSize: 12 }}
+              <XAxis dataKey="year" tick={{ fill: '#7C6992', fontSize: isMobile ? 11 : 12 }}
                 label={{ value: 'Year', position: 'insideBottom', offset: -4, fill: '#7C6992', fontSize: 12 }} />
-              <YAxis tickFormatter={(v) => `€${(v / 1000).toFixed(0)}k`} tick={{ fill: '#7C6992', fontSize: 12 }} width={70} />
+              <YAxis tickFormatter={(v) => `€${(v / 1000).toFixed(0)}k`}
+                tick={{ fill: '#7C6992', fontSize: isMobile ? 11 : 12 }} width={isMobile ? 48 : 70} />
               <Tooltip formatter={(v) => eur(v)} labelFormatter={(l) => `Year ${l}`}
                 contentStyle={{ borderRadius: 12, border: '1px solid rgba(36,23,76,0.10)', fontFamily: 'Open Sans' }} />
               <Legend />

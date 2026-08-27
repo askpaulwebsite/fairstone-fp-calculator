@@ -1,12 +1,20 @@
 import { useCalc } from '../state/CalculatorContext.jsx';
 import { Card, DataRow } from '../components/ui.jsx';
 import { eur, eur2, pct, years, num } from '../lib/format.js';
+import useIsMobile from '../lib/useIsMobile.js';
 
 function HolderBlock({ idx }) {
   const { inputs, derived, setHolder, setIpRow } = useCalc();
+  const isMobile = useIsMobile();
   const h = inputs.holders[idx];
   const d = derived.holders[idx];
   const ip = d.ip;
+
+  const premiumInput = (ri, key, step) => (
+    <input className="input input--money" type="number" step={step}
+      value={h.ipRows[ri][key]}
+      onChange={(e) => setIpRow(idx, ri, key, Number(e.target.value || 0))} />
+  );
 
   return (
     <Card title={`${h.name || `Client ${idx + 1}`} — Quotation Summary`}>
@@ -36,6 +44,48 @@ function HolderBlock({ idx }) {
       <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: 13, color: 'var(--color-purple)', margin: '20px 0 8px' }}>
         Premium illustration
       </h4>
+      {isMobile ? (
+        ip.rows.map((r, ri) => (
+          <div key={ri} className={`m-prem${ri === 0 ? ' m-prem--rec' : ''}`}>
+            <div className="m-prem__title">
+              {ri === 0 ? 'Illustration 1 — recommended' : `Illustration ${ri + 1}`}
+            </div>
+            <div className="m-field">
+              <span className="m-field__label">
+                {ri !== 0 && <span className="datarow__pencil">✎</span>}
+                Monthly Gross Income Payable
+              </span>
+              {ri === 0
+                ? <span className="m-field__value">{eur2(r.grossPayable)}</span>
+                : premiumInput(ri, 'grossPayable')}
+            </div>
+            <div className="m-field">
+              <span className="m-field__label"><span className="datarow__pencil">✎</span> Monthly Premium</span>
+              {premiumInput(ri, 'premium')}
+            </div>
+            <div className="m-field">
+              <span className="m-field__label"><span className="datarow__pencil">✎</span> Discount %</span>
+              {premiumInput(ri, 'discount', '0.05')}
+            </div>
+            <div className="m-field">
+              <span className="m-field__label">Less Discount</span>
+              <span className="m-field__value">{eur2(r.afterDiscount)}</span>
+            </div>
+            <div className="m-field">
+              <span className="m-field__label">Tax Relief %</span>
+              <span className="m-field__value">{pct(r.taxRelief, 0)}</span>
+            </div>
+            <div className="m-field">
+              <span className="m-field__label">Net Premium</span>
+              <span className="m-field__value">{eur2(r.netPremium)}</span>
+            </div>
+            <div className="m-field">
+              <span className="m-field__label">% of Take-Home</span>
+              <span className="m-field__value">{pct(r.netCostPct)}</span>
+            </div>
+          </div>
+        ))
+      ) : (
       <div className="table-wrap">
         <table className="data">
           <thead>
@@ -80,6 +130,7 @@ function HolderBlock({ idx }) {
           </tbody>
         </table>
       </div>
+      )}
       <p className="card__subtitle" style={{ margin: '8px 0 0' }}>
         Row 1 (highlighted) is the recommended maximum cover and feeds the Resilience Summary.
       </p>
